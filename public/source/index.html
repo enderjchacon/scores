@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/bootstrap-vue@2.0.0/dist/bootstrap-vue.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Poppins&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/scores.css" />
+    <title>Index</title>
+  </head>
+  <body>
+    <div id="app">
+      <div id="preloader" v-bind:style="{ display: displayPreloader }">
+        <div class="lds-ellipsis">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      </div>
+      <div id="content" style="display:none">
+        <b-container fluid class="sinpadding">
+          <b-row>
+            <b-col cols="2" sm="1" class="mt-2">
+              <div class="calendar float-right">
+                <div class="arrow-left" @click="paginateGames('quit')">
+                  <img src="./images/icons/left-arrow.png" alt="" />
+                </div>
+                <div class="date-calendar" v-b-tooltip.hover :title="showCalendar?'Cerrar Calendario':'Abrir Calendario'" @click="showCalendar=!showCalendar">
+                  {{ nameMonth }}
+                  <h4>{{ day }}</h4>
+                </div>
+                <div class="arrow-rigth " @click="paginateGames('add')">
+                  <img src="./images/icons/right-arrow.png" alt="" />
+                </div>
+              </div>
+            </b-col>
+            <b-col cols="8" sm="10" v-if="response.length>0">
+              <div v-show="showCalendar">
+                  <datepicker v-model="datepicker" :language="es" :inline="true"></datepicker>
+              </div>
+              <carousel
+                :navigation-enabled="navigationShow"
+                :pagination-enabled="!navigationShow"
+                :per-page-custom="[[320, 1],[375, 1], [768, 2], [1024, 4]]"
+              >
+                <slide v-for="(item, index) in response" :key="item.id">
+                  <!--table-->
+                  <section class="linescore">
+                    <section class="embedded_linescore  linescore-sport-code-1">
+                      <div class="embedded_linescore_container">
+                        <div class="fixed">
+                          <table
+                            class="secondary teams"
+                            cellspacing="0"
+                            cellpadding="0"
+                            border="0"
+                          >
+                            <thead>
+                              <tr class="status-row">
+                                <th class="show_default spacer first second">
+                                  <span
+                                    class="short"
+                                    v-if="item.Estado && isToday"
+                                    >{{ getStatus(item.Estado) }}</span
+                                  >
+                                  <span
+                                    class="short"
+                                    v-else-if="isToday"
+                                    >Hoy</span
+                                  >
+                                  <span class="short" v-else>{{
+                                    item.Fecha
+                                  }}</span>
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr class="team-row away">
+                                <td class="first">
+                                  <span class="cap small row light t147">
+                                  </span>
+                                  <span class="short"
+                                    ><img
+                                      :src="`./images/teams/${item.Equipo_local}.jpg`"
+                                      style="width:15px"
+                                    />
+                                    {{ item.Equipo_local }}</span
+                                  >
+                                </td>
+                              </tr>
+                              <tr class="team-row home">
+                                <td class="first">
+                                  <span class="cap small row light t116"></span>
+                                  <span class="short"
+                                    ><img
+                                      :src="`./images/teams/${item.Equipo_visitante}.jpg`"
+                                      style="width:15px"
+                                    />
+                                    {{ item.Equipo_visitante }}</span
+                                  >
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <div class="fixed">
+                          <table
+                            class="secondary scores"
+                            cellspacing="0"
+                            cellpadding="0"
+                            border="0"
+                          >
+                            <thead>
+                              <tr>
+                                <th
+                                  v-color="item.Inning"
+                                  class="score"
+                                  v-if="item.Inning"
+                                >
+                                  In {{ item.Inning }}
+                                </th>
+                                <th class="score" v-else>{{ item.Hora }}</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr class="away">
+                                <td v-color="item.Score_local" class="score">
+                                  {{ item.Score_local }}
+                                </td>
+                              </tr>
+                              <tr class="home">
+                                <td
+                                  v-color="item.Score_visitante"
+                                  class="score"
+                                >
+                                  {{ item.Score_visitante }}
+                                </td>
+                              </tr>
+                              
+                            </tbody>
+                          </table>
+                          
+                          <div class="inning_button next_button"></div>
+                        </div>
+                        <div class="fixed" >
+                            <table
+                              class="secondary scores"
+                              cellspacing="0"
+                              cellpadding="0"
+                              border="0"
+                            >
+                              <thead>
+                                <tr>
+                                  <th>
+                                    Out {{ item.Outs }}
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr class="away">
+                                  <td class="score">
+                                    <div class="bases">
+                                        <div class="rombo left" v-bind:style="baseStyles(item.HMB,[3,6,7])"></div>
+                                        <div class="rombo middel" v-bind:style="baseStyles(item.HMB,[2,4,5,7])"></div>
+                                        <div class="rombo rigth" v-bind:style="baseStyles(item.HMB,[1,4,6,7])" ></div>                                      
+                                    </div>
+                  
+                                  </td>
+                                </tr>
+                                <tr class="home">
+                                  <td
+                                    class="score"
+                                  >
+                                  {{getTopBottomGame(item.Arriba_abajo)}} 
+                                  </td>
+                                </tr>
+                                
+                              </tbody>
+                            </table>
+                            
+                            <div class="inning_button next_button"></div>
+                        </div>
+                      </div>
+                    </section>
+                  </section>
+                </slide>
+              </carousel>
+            </b-col>
+            <b-col style="background: #f3f3fe;" cols="8" sm="10" v-else>
+              <div v-show="showCalendar">
+                <datepicker v-model="datepicker"  :language="es" :inline="true"></datepicker>
+              </div>
+              <div class="notgames">
+                <h5>No Hay Juegos Cargados para Esta Fecha</h5>
+              </div>
+            </b-col>
+            <b-col cols="2" sm="1">
+              <b-dropdown :text="league?league:'MLB'" class="mt-3 float-left">
+                <b-dropdown-item @click="getDataGames('MLB')">
+                  <img src="./images/icons/logo_mlb.svg" width="35" />
+                </b-dropdown-item>
+                <b-dropdown-item @click="getDataGames('LVBP')">
+                  <img src="./images/icons/logo_lvbp.png" width="30" />
+                </b-dropdown-item>
+              </b-dropdown>
+            </b-col>
+          </b-row>
+        </b-container>
+      </div>
+    </div>
+  </body>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://unpkg.com/babel-polyfill@6.26.0/dist/polyfill.min.js"></script>
+  <script src="https://unpkg.com/bootstrap-vue@2.0.0/dist/bootstrap-vue.js"></script>
+  <script src="./js/vue-carousel.min.js"></script>
+  <script src="https://unpkg.com/vuejs-datepicker"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue-socket.io@3.0.7/dist/vue-socketio.min.js"></script>
+  <script src="https://unpkg.com/vuejs-datepicker/dist/locale/translations/es.js"></script>
+  <script src="./js/app.js"></script>
+
+  <script type="text/javascript">
+    window.onload = function() {
+      //document.getElementById("app").classList.remove("content");
+      document.getElementById("content").style.display = "block";
+    };
+  </script>
+</html>
